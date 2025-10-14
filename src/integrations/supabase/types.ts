@@ -14,7 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      presentations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      slides: {
+        Row: {
+          background_color: string | null
+          content: Json
+          created_at: string
+          id: string
+          layout: string | null
+          presentation_id: string
+          slide_number: number
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          background_color?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          layout?: string | null
+          presentation_id: string
+          slide_number: number
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          background_color?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          layout?: string | null
+          presentation_id?: string
+          slide_number?: number
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slides_presentation_id_fkey"
+            columns: ["presentation_id"]
+            isOneToOne: false
+            referencedRelation: "presentations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
