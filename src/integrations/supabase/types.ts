@@ -19,30 +19,73 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          template_id: string | null
           title: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           description?: string | null
           id?: string
+          template_id?: string | null
           title?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           description?: string | null
           id?: string
+          template_id?: string | null
           title?: string
           updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentations_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
       slides: {
         Row: {
+          animations: Json | null
           background_color: string | null
           content: Json
           created_at: string
+          custom_styles: Json | null
           id: string
           layout: string | null
           presentation_id: string
@@ -51,9 +94,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          animations?: Json | null
           background_color?: string | null
           content?: Json
           created_at?: string
+          custom_styles?: Json | null
           id?: string
           layout?: string | null
           presentation_id: string
@@ -62,9 +107,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          animations?: Json | null
           background_color?: string | null
           content?: Json
           created_at?: string
+          custom_styles?: Json | null
           id?: string
           layout?: string | null
           presentation_id?: string
@@ -81,6 +128,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      templates: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_premium: boolean | null
+          name: string
+          theme_config: Json
+          thumbnail_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_premium?: boolean | null
+          name: string
+          theme_config?: Json
+          thumbnail_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_premium?: boolean | null
+          name?: string
+          theme_config?: Json
+          thumbnail_url?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

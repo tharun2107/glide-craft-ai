@@ -40,7 +40,7 @@ const Hero = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-elegant group"
-                onClick={() => navigate('/create')}
+                onClick={() => navigate('/auth')}
               >
                 Start Creating Free
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />

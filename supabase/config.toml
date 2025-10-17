@@ -1,4 +1,7 @@
 project_id = "hogyzotbfqdjybmfpqaw"
 
 [functions.generate-slides]
-verify_jwt = false
+verify_jwt = true
+
+[functions.ai-assistant]
+verify_jwt = true

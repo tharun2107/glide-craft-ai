@@ -4,9 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Save, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, Save, Plus, Trash2, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { AIAssistant } from "@/components/AIAssistant";
+import { SlideControls } from "@/components/SlideControls";
+import { ExportMenu } from "@/components/ExportMenu";
+import type { Session } from "@supabase/supabase-js";
 
 interface Slide {
   id: string;
@@ -15,26 +20,43 @@ interface Slide {
   content: any;
   layout: string;
   background_color: string;
+  custom_styles: any;
+  animations: any;
 }
 
 interface Presentation {
   id: string;
   title: string;
   description: string | null;
+  template_id: string | null;
+}
+
+interface Template {
+  id: string;
+  theme_config: any;
 }
 
 const SlideEditor = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
   const [presentation, setPresentation] = useState<Presentation | null>(null);
+  const [template, setTemplate] = useState<Template | null>(null);
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    loadPresentation();
-  }, [id]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        navigate('/auth');
+      } else {
+        loadPresentation();
+      }
+    });
+  }, [id, navigate]);
 
   const loadPresentation = async () => {
     try {
@@ -54,18 +76,48 @@ const SlideEditor = () => {
 
       if (slidesError) throw slidesError;
 
+      // Load template if exists
+      if (presentationData.template_id) {
+        const { data: templateData } = await supabase
+          .from('templates')
+          .select('*')
+          .eq('id', presentationData.template_id)
+          .single();
+        setTemplate(templateData);
+      }
+
       setPresentation(presentationData);
       setSlides(slidesData || []);
     } catch (error) {
       console.error('Error loading presentation:', error);
       toast.error('Failed to load presentation');
-      navigate('/');
+      navigate('/dashboard');
     } finally {
       setIsLoading(false);
     }
   };
 
   const currentSlide = slides[currentSlideIndex];
+
+  const handleStyleChange = (key: string, value: any) => {
+    const updated = [...slides];
+    updated[currentSlideIndex] = {
+      ...updated[currentSlideIndex],
+      custom_styles: { ...updated[currentSlideIndex].custom_styles, [key]: value }
+    };
+    setSlides(updated);
+  };
+
+  const handleApplyAISuggestion = (field: string, newContent: string) => {
+    if (field === 'heading') {
+      handleContentChange('heading', newContent);
+    } else if (field === 'bullets') {
+      const bullets = newContent.split('\n').filter(b => b.trim());
+      handleContentChange('bullets', bullets);
+    } else if (field === 'notes') {
+      handleContentChange('notes', newContent);
+    }
+  };
 
   const handleTitleChange = (value: string) => {
     const updated = [...slides];
@@ -187,6 +239,7 @@ const SlideEditor = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <ExportMenu presentationTitle={presentation?.title || ''} slides={slides} />
               <Button variant="outline" onClick={handleAddSlide}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Slide
@@ -202,9 +255,17 @@ const SlideEditor = () => {
 
       {/* Main content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-[1fr_400px] gap-8">
           {/* Editor panel */}
-          <Card className="p-6 space-y-6">
+          <div className="space-y-6">
+            <Card className="p-6 space-y-6">
+              <Tabs defaultValue="content">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="content">Content</TabsTrigger>
+                  <TabsTrigger value="style">Style</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="content" className="space-y-6">
             <div>
               <label className="block text-sm font-semibold mb-2">Slide Title</label>
               <Input
@@ -243,20 +304,43 @@ const SlideEditor = () => {
               />
             </div>
 
-            <Button
-              variant="destructive"
-              onClick={handleDeleteSlide}
-              className="w-full"
-              disabled={slides.length === 1}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete Slide
-            </Button>
-          </Card>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteSlide}
+                    className="w-full"
+                    disabled={slides.length === 1}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Slide
+                  </Button>
+                </TabsContent>
+
+                <TabsContent value="style" className="space-y-4">
+                  <SlideControls 
+                    customStyles={currentSlide?.custom_styles || {}}
+                    onStyleChange={handleStyleChange}
+                  />
+                </TabsContent>
+              </Tabs>
+            </Card>
+
+            <AIAssistant
+              content={currentSlide?.content?.heading || ''}
+              context={presentation?.title}
+              onApply={(content) => handleApplyAISuggestion('heading', content)}
+            />
+          </div>
 
           {/* Preview panel */}
           <div className="space-y-4">
-            <Card className="p-8 min-h-96 bg-white shadow-elegant">
+            <Card 
+              className="p-8 min-h-96 shadow-elegant transition-all"
+              style={{
+                backgroundColor: currentSlide?.custom_styles?.backgroundColor || template?.theme_config?.backgroundColor || '#ffffff',
+                color: currentSlide?.custom_styles?.textColor || template?.theme_config?.textColor || '#000000',
+                fontFamily: currentSlide?.custom_styles?.fontFamily || template?.theme_config?.fontFamily || 'Inter, sans-serif'
+              }}
+            >
               <div className="space-y-6">
                 <h1 className="text-3xl font-bold text-gray-900">
                   {currentSlide?.title || 'Untitled Slide'}

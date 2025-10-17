@@ -13,23 +13,35 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, slideCount = 5 } = await req.json();
+    const { prompt, slideCount = 5, templateId } = await req.json();
 
     if (!prompt) {
       throw new Error('Prompt is required');
     }
 
-    console.log('Generating presentation:', { prompt, slideCount });
+    // Get authenticated user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseClient = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      throw new Error('Unauthorized');
+    }
+
+    console.log('Generating presentation:', { prompt, slideCount, userId: user.id });
 
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     if (!geminiApiKey) {
       throw new Error('GEMINI_API_KEY is not configured');
     }
-
-    // Create Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Call Gemini API to generate presentation structure
     const systemPrompt = `You are a professional presentation creator. Generate a structured presentation based on the user's request.
@@ -96,11 +108,13 @@ Create ${slideCount} slides. Make content professional and well-structured.`;
     }
 
     // Create presentation in database
-    const { data: presentation, error: presentationError } = await supabase
+    const { data: presentation, error: presentationError } = await supabaseClient
       .from('presentations')
       .insert({
         title: presentationData.title,
         description: presentationData.description,
+        user_id: user.id,
+        template_id: templateId || null
       })
       .select()
       .single();
@@ -121,7 +135,7 @@ Create ${slideCount} slides. Make content professional and well-structured.`;
       layout: slide.layout || 'title-content',
     }));
 
-    const { data: slides, error: slidesError } = await supabase
+    const { data: slides, error: slidesError } = await supabaseClient
       .from('slides')
       .insert(slidesData)
       .select();

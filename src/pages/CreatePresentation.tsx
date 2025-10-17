@@ -1,17 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
+
+interface Template {
+  id: string;
+  name: string;
+  description: string;
+  theme_config: any;
+}
 
 const CreatePresentation = () => {
   const [prompt, setPrompt] = useState("");
   const [slideCount, setSlideCount] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        navigate('/auth');
+      }
+    });
+
+    loadTemplates();
+  }, [navigate]);
+
+  const loadTemplates = async () => {
+    const { data, error } = await supabase
+      .from('templates')
+      .select('*')
+      .order('created_at');
+    
+    if (!error && data) {
+      setTemplates(data);
+      setSelectedTemplate(data[0]?.id || null);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -19,11 +53,20 @@ const CreatePresentation = () => {
       return;
     }
 
+    if (!selectedTemplate) {
+      toast.error("Please select a template");
+      return;
+    }
+
     setIsGenerating(true);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-slides', {
-        body: { prompt, slideCount }
+        body: { 
+          prompt, 
+          slideCount,
+          templateId: selectedTemplate
+        }
       });
 
       if (error) throw error;
@@ -59,6 +102,45 @@ const CreatePresentation = () => {
 
         <Card className="p-8 shadow-elegant border-border animate-fade-in" style={{ animationDelay: "0.2s" }}>
           <div className="space-y-6">
+            {/* Template Selection */}
+            <div>
+              <label className="block text-sm font-semibold mb-3">
+                Choose a Template
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {templates.map((template) => (
+                  <Card
+                    key={template.id}
+                    className={`p-4 cursor-pointer transition-all hover:shadow-md ${
+                      selectedTemplate === template.id
+                        ? 'ring-2 ring-primary shadow-elegant'
+                        : 'hover:border-primary/50'
+                    }`}
+                    onClick={() => setSelectedTemplate(template.id)}
+                  >
+                    <div className="relative">
+                      {selectedTemplate === template.id && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                          <Check className="w-4 h-4 text-primary-foreground" />
+                        </div>
+                      )}
+                      <div 
+                        className="w-full h-20 rounded mb-2"
+                        style={{ 
+                          background: template.theme_config.backgroundColor,
+                          border: `2px solid ${template.theme_config.primaryColor}`
+                        }}
+                      />
+                      <h4 className="font-semibold text-sm">{template.name}</h4>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        {template.description}
+                      </p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-semibold mb-2">
                 Describe your presentation
