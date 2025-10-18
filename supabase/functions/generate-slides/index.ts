@@ -25,13 +25,15 @@ serve(async (req) => {
       throw new Error('No authorization header');
     }
 
+    const token = authHeader.replace('Bearer ', '').trim();
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseClient = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } }
     });
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError) {
       console.error('Auth error:', userError);
       throw new Error(`Authentication failed: ${userError.message}`);
@@ -165,10 +167,11 @@ Create ${slideCount} slides. Make content professional and well-structured.`;
   } catch (error) {
     console.error('Error in generate-slides function:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const status = /auth|authoriz/i.test(errorMessage) ? 401 : 500;
     return new Response(
       JSON.stringify({ error: errorMessage }),
       {
-        status: 500,
+        status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
