@@ -58,9 +58,24 @@ const CreatePresentation = () => {
       return;
     }
 
+    if (!session) {
+      toast.error("Please log in to create presentations");
+      navigate('/auth');
+      return;
+    }
+
     setIsGenerating(true);
 
     try {
+      // Get fresh session token
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (!currentSession) {
+        toast.error("Session expired. Please log in again.");
+        navigate('/auth');
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-slides', {
         body: { 
           prompt, 

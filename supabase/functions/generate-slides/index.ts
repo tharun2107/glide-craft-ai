@@ -32,8 +32,13 @@ serve(async (req) => {
     });
 
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      throw new Error('Unauthorized');
+    if (userError) {
+      console.error('Auth error:', userError);
+      throw new Error(`Authentication failed: ${userError.message}`);
+    }
+    if (!user) {
+      console.error('No user found in token');
+      throw new Error('No authenticated user found');
     }
 
     console.log('Generating presentation:', { prompt, slideCount, userId: user.id });
