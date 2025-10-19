@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, slideCount = 5, templateId } = await req.json();
+    const { prompt, slideCount = 5, templateId, withImages = false } = await req.json();
 
     if (!prompt) {
       throw new Error('Prompt is required');
@@ -51,6 +51,10 @@ serve(async (req) => {
     }
 
     // Call Gemini API to generate presentation structure
+    const imageLayoutInstruction = withImages 
+      ? ` Each slide should have an image placeholder on the right side. Include imagePrompt in content for AI image generation.`
+      : '';
+    
     const systemPrompt = `You are a professional presentation creator. Generate a structured presentation based on the user's request.
 Return ONLY valid JSON in this exact format (no markdown, no code blocks):
 {
@@ -62,14 +66,15 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
       "content": {
         "heading": "Main heading",
         "bullets": ["Point 1", "Point 2"],
+        "imagePrompt": "Description for AI image generation (only if withImages is true)",
         "notes": "Speaker notes"
       },
-      "layout": "title-content"
+      "layout": "${withImages ? 'image-right' : 'title-content'}"
     }
   ]
 }
 
-Create ${slideCount} slides. Make content professional and well-structured.`;
+Create ${slideCount} slides. Make content professional and well-structured.${imageLayoutInstruction}`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
       method: 'POST',

@@ -164,7 +164,7 @@ const SlideEditor = () => {
   };
 
   const handleAddText = () => {
-    toast.info("Click on any text area in the canvas to edit directly");
+    toast.info("Click 'Add Text' button on the canvas to add a new text box");
   };
 
   const handleAddImage = () => {

@@ -18,6 +18,7 @@ interface Template {
 const CreatePresentation = () => {
   const [prompt, setPrompt] = useState("");
   const [slideCount, setSlideCount] = useState(5);
+  const [withImages, setWithImages] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -80,7 +81,8 @@ const CreatePresentation = () => {
         body: { 
           prompt, 
           slideCount,
-          templateId: selectedTemplate
+          templateId: selectedTemplate,
+          withImages
         }
       });
 
@@ -188,6 +190,19 @@ const CreatePresentation = () => {
                 <span>3 slides</span>
                 <span>15 slides</span>
               </div>
+            </div>
+
+            <div className="flex items-center space-x-2 p-4 bg-muted/30 rounded-lg">
+              <input
+                type="checkbox"
+                id="withImages"
+                checked={withImages}
+                onChange={(e) => setWithImages(e.target.checked)}
+                className="w-4 h-4 rounded border-input"
+              />
+              <label htmlFor="withImages" className="text-sm font-medium cursor-pointer">
+                Generate slides with images (Right: Image, Left: Text layout)
+              </label>
             </div>
 
             <Button
