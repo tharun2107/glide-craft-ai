@@ -1,11 +1,11 @@
 import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
-import { Rnd } from "react-rnd";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Trash2, Type, Image as ImageIcon } from "lucide-react";
+import { Trash2, Type } from "lucide-react";
 import { RichTextToolbar } from "./RichTextToolbar";
+import { DraggableResizable } from "./DraggableResizable";
 
 interface SlideElement {
   id: string;
@@ -182,36 +182,27 @@ export const SlideCanvas = ({ slide, template, onUpdate }: SlideCanvasProps) => 
         onClick={() => setSelectedElement(null)}
       >
         {elements.map((element) => (
-          <Rnd
+          <DraggableResizable
             key={element.id}
-            position={element.position}
-            size={element.size}
-            onDragStop={(e, d) => {
-              handleElementUpdate(element.id, {
-                position: { x: d.x, y: d.y }
-              });
+            initialPosition={element.position}
+            initialSize={element.size}
+            selected={selectedElement === element.id}
+            onSelect={() => setSelectedElement(element.id)}
+            onDragStop={(position) => {
+              handleElementUpdate(element.id, { position });
             }}
-            onResizeStop={(e, direction, ref, delta, position) => {
-              handleElementUpdate(element.id, {
-                size: {
-                  width: parseInt(ref.style.width),
-                  height: parseInt(ref.style.height)
-                },
-                position
-              });
+            onResizeStop={(size, position) => {
+              handleElementUpdate(element.id, { size, position });
             }}
             bounds="parent"
-            className={`${selectedElement === element.id ? 'ring-2 ring-primary' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedElement(element.id);
-            }}
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              setIsEditing(element.id);
-            }}
           >
-            <div className="w-full h-full p-2 hover:bg-black/5 transition-colors relative group">
+            <div 
+              className="w-full h-full p-2 hover:bg-black/5 transition-colors relative group"
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(element.id);
+              }}
+            >
               {isEditing === element.id ? (
                 element.type === 'image' ? (
                   <Input
@@ -261,7 +252,7 @@ export const SlideCanvas = ({ slide, template, onUpdate }: SlideCanvasProps) => 
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="absolute -top-2 -right-2 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-2 -right-2 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDelete(element.id);
@@ -271,11 +262,11 @@ export const SlideCanvas = ({ slide, template, onUpdate }: SlideCanvasProps) => 
                 </Button>
               )}
             </div>
-          </Rnd>
+          </DraggableResizable>
         ))}
 
         {/* Add element buttons */}
-        <div className="absolute bottom-4 right-4 flex gap-2">
+        <div className="absolute bottom-4 right-4 flex gap-2 z-20">
           <Button
             variant="secondary"
             size="sm"
@@ -287,7 +278,7 @@ export const SlideCanvas = ({ slide, template, onUpdate }: SlideCanvasProps) => 
         </div>
 
         {/* Hint text */}
-        <div className="absolute top-2 right-2 text-xs opacity-50 bg-background/80 px-2 py-1 rounded">
+        <div className="absolute top-2 right-2 text-xs opacity-50 bg-background/80 px-2 py-1 rounded z-10">
           Double-click to edit • Drag to move • Resize handles to scale
         </div>
       </Card>
