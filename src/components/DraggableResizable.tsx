@@ -150,11 +150,17 @@ export const DraggableResizable: React.FC<DraggableResizableProps> = ({
         top: position.y,
         width: size.width,
         height: size.height,
-        cursor: isDragging ? 'move' : 'default',
+        cursor: isDragging ? 'grabbing' : 'grab',
         userSelect: 'none',
+        transition: isDragging || isResizing ? 'none' : 'box-shadow 0.2s',
+        zIndex: selected ? 1000 : 1,
       }}
-      className={`${selected ? 'ring-2 ring-primary' : ''}`}
+      className={`${selected ? 'ring-2 ring-primary shadow-lg' : ''} ${isDragging ? 'shadow-2xl' : ''}`}
       onMouseDown={handleMouseDown}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect?.();
+      }}
     >
       {children}
       

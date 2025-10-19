@@ -119,6 +119,50 @@ Create ${slideCount} slides. Make content professional and well-structured.${ima
       throw new Error('Failed to parse AI response');
     }
 
+    // Generate images if withImages is true
+    if (withImages && presentationData.slides) {
+      console.log('Generating images for slides...');
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      
+      for (const slide of presentationData.slides) {
+        if (slide.content?.imagePrompt) {
+          try {
+            const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: 'google/gemini-2.5-flash-image-preview',
+                messages: [
+                  {
+                    role: 'user',
+                    content: slide.content.imagePrompt
+                  }
+                ],
+                modalities: ['image', 'text']
+              })
+            });
+
+            if (imageResponse.ok) {
+              const imageData = await imageResponse.json();
+              const imageUrl = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+              
+              if (imageUrl) {
+                slide.content.images = [{ url: imageUrl, alt: slide.content.imagePrompt }];
+                console.log(`Image generated for slide: ${slide.title}`);
+              }
+            } else {
+              console.error(`Failed to generate image for slide ${slide.title}`);
+            }
+          } catch (error) {
+            console.error(`Error generating image for slide ${slide.title}:`, error);
+          }
+        }
+      }
+    }
+
     // Create presentation in database
     const { data: presentation, error: presentationError } = await supabaseClient
       .from('presentations')

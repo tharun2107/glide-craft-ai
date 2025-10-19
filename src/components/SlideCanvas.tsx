@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Trash2, Type } from "lucide-react";
+import { Trash2, Type, ImagePlus } from "lucide-react";
 import { RichTextToolbar } from "./RichTextToolbar";
 import { DraggableResizable } from "./DraggableResizable";
 
@@ -31,12 +31,14 @@ interface SlideCanvasProps {
 }
 
 export const SlideCanvas = ({ slide, template, onUpdate }: SlideCanvasProps) => {
-  const [elements, setElements] = useState<SlideElement[]>(() => {
-    // Initialize elements from slide content
-    const initialElements: SlideElement[] = [];
+  const [elements, setElements] = useState<SlideElement[]>([]);
+  
+  // Sync elements with slide content
+  useEffect(() => {
+    const newElements: SlideElement[] = [];
     
     if (slide?.title) {
-      initialElements.push({
+      newElements.push({
         id: 'title',
         type: 'heading',
         content: slide.title,
@@ -47,7 +49,7 @@ export const SlideCanvas = ({ slide, template, onUpdate }: SlideCanvasProps) => 
     }
 
     if (slide?.content?.heading) {
-      initialElements.push({
+      newElements.push({
         id: 'heading',
         type: 'heading',
         content: slide.content.heading,
@@ -58,7 +60,7 @@ export const SlideCanvas = ({ slide, template, onUpdate }: SlideCanvasProps) => 
     }
 
     if (slide?.content?.bullets && slide.content.bullets.length > 0) {
-      initialElements.push({
+      newElements.push({
         id: 'bullets',
         type: 'textbox',
         content: slide.content.bullets.join('\n'),
@@ -68,21 +70,25 @@ export const SlideCanvas = ({ slide, template, onUpdate }: SlideCanvasProps) => 
       });
     }
 
+    // Handle images - position based on layout
     if (slide?.content?.images && slide.content.images.length > 0) {
+      const layout = slide?.layout;
       slide.content.images.forEach((img: any, index: number) => {
-        initialElements.push({
+        // Position images on the right side for image-right layout
+        const isImageRight = layout === 'image-right';
+        newElements.push({
           id: `image-${index}`,
           type: 'image',
           content: img.url,
-          position: { x: 600, y: 150 + (index * 220) },
-          size: { width: 300, height: 200 },
+          position: isImageRight ? { x: 650, y: 100 + (index * 250) } : { x: 50, y: 450 + (index * 250) },
+          size: { width: 450, height: 220 },
           style: {}
         });
       });
     }
 
-    return initialElements;
-  });
+    setElements(newElements);
+  }, [slide]);
 
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState<string | null>(null);
@@ -271,6 +277,7 @@ export const SlideCanvas = ({ slide, template, onUpdate }: SlideCanvasProps) => 
             variant="secondary"
             size="sm"
             onClick={handleAddTextBox}
+            className="shadow-lg"
           >
             <Type className="w-4 h-4 mr-2" />
             Add Text
