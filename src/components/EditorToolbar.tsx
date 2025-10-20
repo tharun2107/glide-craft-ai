@@ -4,22 +4,18 @@ import {
   Image as ImageIcon, 
   Palette, 
   Sparkles,
-  Download,
-  Layout
+  Play
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ExportMenu } from "./ExportMenu";
 
 interface EditorToolbarProps {
   onAddText: () => void;
   onAddImage: () => void;
   onOpenThemes: () => void;
   onOpenAnimations: () => void;
-  onExport: (format: 'pdf' | 'pptx' | 'images') => void;
+  onOpenSlideshow: () => void;
+  slides: any[];
+  presentationTitle: string;
 }
 
 export const EditorToolbar = ({
@@ -27,7 +23,9 @@ export const EditorToolbar = ({
   onAddImage,
   onOpenThemes,
   onOpenAnimations,
-  onExport,
+  onOpenSlideshow,
+  slides,
+  presentationTitle,
 }: EditorToolbarProps) => {
   return (
     <div className="flex items-center gap-2 p-2 border-b bg-card">
@@ -71,25 +69,22 @@ export const EditorToolbar = ({
         Animations
       </Button>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="default" size="sm" className="ml-auto">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onExport('pdf')}>
-            Export as PDF
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onExport('pptx')}>
-            Export as PPTX
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onExport('images')}>
-            Export as Images
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="ml-auto flex items-center gap-2">
+        <Button 
+          variant="default" 
+          size="sm"
+          onClick={onOpenSlideshow}
+          className="flex items-center gap-2"
+        >
+          <Play className="w-4 h-4" />
+          Slideshow
+        </Button>
+        
+        <ExportMenu 
+          presentationTitle={presentationTitle}
+          slides={slides}
+        />
+      </div>
     </div>
   );
 };

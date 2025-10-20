@@ -95,10 +95,18 @@ export const AIAssistant = ({ content, context, onApply }: AIAssistantProps) => 
       )}
 
       {suggestion && (
-        <div className="space-y-2">
-          <div className="p-3 bg-muted/50 rounded-lg text-sm">
-            {suggestion}
+        <div className="space-y-3 animate-fade-in">
+          <div className="text-xs font-semibold text-primary flex items-center gap-1">
+            <Sparkles className="w-3 h-3" />
+            AI Suggestion
           </div>
+          <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <div className="prose prose-sm max-w-none">
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                {suggestion}
+              </p>
+            </div>
+          </Card>
           <Button
             size="sm"
             onClick={() => {
@@ -108,6 +116,7 @@ export const AIAssistant = ({ content, context, onApply }: AIAssistantProps) => 
             }}
             className="w-full"
           >
+            <Wand2 className="w-3 h-3 mr-2" />
             Apply Suggestion
           </Button>
         </div>

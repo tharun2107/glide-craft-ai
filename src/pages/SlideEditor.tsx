@@ -10,6 +10,8 @@ import { SlideCanvas } from "@/components/SlideCanvas";
 import { SlideThumbnails } from "@/components/SlideThumbnails";
 import { ImageGeneratorDialog } from "@/components/ImageGeneratorDialog";
 import { ThemesDialog } from "@/components/ThemesDialog";
+import { AnimationsDialog } from "@/components/AnimationsDialog";
+import { SlideshowPreview } from "@/components/SlideshowPreview";
 import type { Session } from "@supabase/supabase-js";
 
 interface Slide {
@@ -48,6 +50,8 @@ const SlideEditor = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showImageGen, setShowImageGen] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
+  const [showAnimations, setShowAnimations] = useState(false);
+  const [showSlideshow, setShowSlideshow] = useState(false);
   const [showAI, setShowAI] = useState(true);
 
   useEffect(() => {
@@ -203,9 +207,11 @@ const SlideEditor = () => {
     });
   };
 
-  const handleExport = async (format: 'pdf' | 'pptx' | 'images') => {
-    toast.info(`Exporting as ${format.toUpperCase()}...`);
-    // Export functionality is handled by ExportMenu component
+  const handleAnimationApply = (animation: string) => {
+    handleSlideUpdate({
+      animations: { entry: animation }
+    });
+    toast.success("Animation applied!");
   };
 
   if (isLoading) {
@@ -257,8 +263,10 @@ const SlideEditor = () => {
         onAddText={handleAddText}
         onAddImage={handleAddImage}
         onOpenThemes={() => setShowThemes(true)}
-        onOpenAnimations={() => toast.info("Animations coming soon!")}
-        onExport={handleExport}
+        onOpenAnimations={() => setShowAnimations(true)}
+        onOpenSlideshow={() => setShowSlideshow(true)}
+        slides={slides}
+        presentationTitle={presentation?.title || 'Presentation'}
       />
 
       {/* Main Editor */}
@@ -314,6 +322,22 @@ const SlideEditor = () => {
         currentTemplateId={presentation?.template_id || null}
         onThemeApply={handleThemeApply}
       />
+
+      <AnimationsDialog
+        open={showAnimations}
+        onOpenChange={setShowAnimations}
+        currentAnimation={currentSlide?.animations?.entry || 'none'}
+        onAnimationApply={handleAnimationApply}
+      />
+
+      {/* Slideshow */}
+      {showSlideshow && (
+        <SlideshowPreview
+          slides={slides}
+          initialSlide={currentSlideIndex}
+          onClose={() => setShowSlideshow(false)}
+        />
+      )}
     </div>
   );
 };
