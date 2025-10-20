@@ -7,6 +7,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Download, FileText, Image } from "lucide-react";
 import { toast } from "sonner";
+import pptxgen from "pptxgenjs";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 interface ExportMenuProps {
   presentationTitle: string;
@@ -15,25 +18,31 @@ interface ExportMenuProps {
 
 export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
   const handleExportPDF = async () => {
-    toast.info("Preparing PDF export...");
+    toast.info("Generating PDF...");
     
     try {
-      // Create a comprehensive HTML representation with images
-      const printContent = slides.map((slide, index) => {
-        const images = slide.content?.images || [];
-        const imageHtml = images.length > 0 
-          ? `<div style="position: absolute; right: 40px; top: 50%; transform: translateY(-50%); width: 400px;">
-              ${images.map((img: any) => `
-                <img src="${img.url}" alt="${img.alt || 'Slide image'}" 
-                     style="width: 100%; border-radius: 8px; margin-bottom: 10px;" />
-              `).join('')}
-            </div>`
-          : '';
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [1280, 720]
+      });
 
-        return `
-          <div style="page-break-after: always; padding: 60px; min-height: 100vh; position: relative; 
-                      background: ${slide.background_color || '#ffffff'};">
-            <div style="max-width: ${images.length > 0 ? '50%' : '100%'};">
+      for (let i = 0; i < slides.length; i++) {
+        const slide = slides[i];
+        
+        // Create a temporary div to render the slide
+        const slideDiv = document.createElement('div');
+        slideDiv.style.width = '1280px';
+        slideDiv.style.height = '720px';
+        slideDiv.style.padding = '60px';
+        slideDiv.style.position = 'absolute';
+        slideDiv.style.left = '-9999px';
+        slideDiv.style.background = slide.background_color || '#ffffff';
+        
+        const images = slide.content?.images || [];
+        slideDiv.innerHTML = `
+          <div style="display: flex; height: 100%; align-items: center;">
+            <div style="flex: 1; max-width: ${images.length > 0 ? '50%' : '100%'};">
               <h1 style="font-size: 48px; margin-bottom: 30px; font-weight: bold; color: #1a1a1a;">
                 ${slide.title || 'Untitled Slide'}
               </h1>
@@ -48,198 +57,204 @@ export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
                 </ul>
               ` : ''}
             </div>
-            ${imageHtml}
+            ${images.length > 0 ? `
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; padding-left: 40px;">
+                ${images.map((img: any) => `
+                  <img src="${img.url}" alt="${img.alt || 'Slide image'}" 
+                       style="width: 100%; border-radius: 8px;" />
+                `).join('')}
+              </div>
+            ` : ''}
           </div>
         `;
-      }).join('');
-
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>${presentationTitle}</title>
-              <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; }
-                @media print {
-                  @page { size: A4 landscape; margin: 0; }
-                  body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-                }
-              </style>
-            </head>
-            <body>${printContent}</body>
-          </html>
-        `);
-        printWindow.document.close();
+        
+        document.body.appendChild(slideDiv);
         
         // Wait for images to load
-        setTimeout(() => {
-          printWindow.print();
-          toast.success("PDF ready! Save as PDF in the print dialog.");
-        }, 500);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const canvas = await html2canvas(slideDiv, {
+          backgroundColor: slide.background_color || '#ffffff',
+          scale: 2
+        });
+        
+        document.body.removeChild(slideDiv);
+        
+        if (i > 0) pdf.addPage();
+        
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        pdf.addImage(imgData, 'JPEG', 0, 0, 1280, 720);
       }
+      
+      pdf.save(`${presentationTitle.replace(/\s+/g, '-')}.pdf`);
+      toast.success("PDF exported successfully!");
     } catch (error) {
       console.error('PDF export error:', error);
       toast.error("Failed to export PDF");
     }
   };
 
-  const handleExportPPTX = () => {
-    toast.info("Preparing PowerPoint-compatible HTML...");
-    handleExportHTML();
-  };
-
-  const handleExportHTML = () => {
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <title>${presentationTitle}</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      margin: 0; 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
-      overflow: hidden;
-      background: #000;
-    }
-    .slide { 
-      display: none; 
-      padding: 60px; 
-      min-height: 100vh; 
-      position: relative;
-      background: #fff;
-    }
-    .slide.active { display: flex; flex-direction: column; justify-content: center; }
-    .slide-content { max-width: 50%; }
-    .slide-images { position: absolute; right: 60px; top: 50%; transform: translateY(-50%); width: 400px; }
-    .slide-images img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
-    h1 { font-size: 48px; margin-bottom: 30px; font-weight: bold; color: #1a1a1a; }
-    h2 { font-size: 32px; margin-bottom: 30px; font-weight: 600; color: #333; }
-    ul { font-size: 24px; line-height: 1.8; list-style: disc; padding-left: 30px; }
-    li { margin-bottom: 10px; }
-    .nav { 
-      position: fixed; 
-      bottom: 30px; 
-      left: 50%; 
-      transform: translateX(-50%); 
-      background: rgba(0,0,0,0.8);
-      padding: 15px 20px;
-      border-radius: 50px;
-      backdrop-filter: blur(10px);
-    }
-    button { 
-      padding: 12px 24px; 
-      margin: 0 5px; 
-      font-size: 16px; 
-      cursor: pointer;
-      background: #fff;
-      border: none;
-      border-radius: 25px;
-      transition: all 0.2s;
-    }
-    button:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(255,255,255,0.3); }
-    #counter { color: white; margin: 0 15px; font-weight: 500; }
-  </style>
-</head>
-<body>
-  ${slides.map((slide, index) => {
-    const images = slide.content?.images || [];
-    return `
-    <div class="slide ${index === 0 ? 'active' : ''}" id="slide-${index}" 
-         style="background: ${slide.background_color || '#ffffff'};">
-      <div class="slide-content" style="max-width: ${images.length > 0 ? '50%' : '100%'};">
-        <h1>${slide.title || 'Untitled Slide'}</h1>
-        ${slide.content?.heading ? `<h2>${slide.content.heading}</h2>` : ''}
-        ${slide.content?.bullets && slide.content.bullets.length > 0 ? `
-          <ul>
-            ${slide.content.bullets.map((bullet: string) => `<li>${bullet}</li>`).join('')}
-          </ul>
-        ` : ''}
-      </div>
-      ${images.length > 0 ? `
-        <div class="slide-images">
-          ${images.map((img: any) => `
-            <img src="${img.url}" alt="${img.alt || 'Slide image'}" />
-          `).join('')}
-        </div>
-      ` : ''}
-    </div>
-  `;
-  }).join('')}
-  
-  <div class="nav">
-    <button onclick="prevSlide()">Previous</button>
-    <span id="counter">1 / ${slides.length}</span>
-    <button onclick="nextSlide()">Next</button>
-  </div>
-
-  <script>
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.slide');
-    const counter = document.getElementById('counter');
+  const handleExportPPTX = async () => {
+    toast.info("Generating PowerPoint...");
     
-    function showSlide(n) {
-      slides[currentSlide].classList.remove('active');
-      currentSlide = (n + slides.length) % slides.length;
-      slides[currentSlide].classList.add('active');
-      counter.textContent = (currentSlide + 1) + ' / ' + slides.length;
-    }
-    
-    function nextSlide() { showSlide(currentSlide + 1); }
-    function prevSlide() { showSlide(currentSlide - 1); }
-    
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight') nextSlide();
-      if (e.key === 'ArrowLeft') prevSlide();
-    });
-  </script>
-</body>
-</html>
-    `;
+    try {
+      const pptx = new pptxgen();
+      pptx.layout = 'LAYOUT_16x9';
+      pptx.author = 'SliderMaker AI';
+      pptx.title = presentationTitle;
 
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${presentationTitle.replace(/\s+/g, '-')}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Presentation exported as HTML!");
+      for (const slide of slides) {
+        const pptxSlide = pptx.addSlide();
+        
+        // Set background color
+        if (slide.background_color) {
+          pptxSlide.background = { color: slide.background_color.replace('#', '') };
+        }
+
+        const images = slide.content?.images || [];
+        const hasImages = images.length > 0;
+
+        // Add title
+        if (slide.title) {
+          pptxSlide.addText(slide.title, {
+            x: 0.5,
+            y: 0.5,
+            w: hasImages ? 4.5 : 9,
+            h: 1,
+            fontSize: 44,
+            bold: true,
+            color: '1a1a1a'
+          });
+        }
+
+        // Add heading
+        if (slide.content?.heading) {
+          pptxSlide.addText(slide.content.heading, {
+            x: 0.5,
+            y: 1.8,
+            w: hasImages ? 4.5 : 9,
+            h: 0.8,
+            fontSize: 28,
+            bold: true,
+            color: '333333'
+          });
+        }
+
+        // Add bullets
+        if (slide.content?.bullets && slide.content.bullets.length > 0) {
+          pptxSlide.addText(
+            slide.content.bullets.map((bullet: string) => ({ text: bullet, options: { bullet: true } })),
+            {
+              x: 0.5,
+              y: slide.content?.heading ? 2.8 : 1.8,
+              w: hasImages ? 4.5 : 9,
+              h: 3,
+              fontSize: 20,
+              color: '444444',
+              lineSpacing: 32
+            }
+          );
+        }
+
+        // Add images
+        if (hasImages) {
+          let yPos = 1.0;
+          for (const img of images) {
+            try {
+              pptxSlide.addImage({
+                path: img.url,
+                x: 5.5,
+                y: yPos,
+                w: 4,
+                h: 2.5
+              });
+              yPos += 3;
+            } catch (imgError) {
+              console.error('Error adding image:', imgError);
+            }
+          }
+        }
+      }
+
+      await pptx.writeFile({ fileName: `${presentationTitle.replace(/\s+/g, '-')}.pptx` });
+      toast.success("PowerPoint exported successfully!");
+    } catch (error) {
+      console.error('PPTX export error:', error);
+      toast.error("Failed to export PowerPoint");
+    }
   };
 
   const handleExportImages = async () => {
-    toast.info("Preparing images export...");
+    toast.info("Generating images...");
     
     try {
-      // This is a simplified version - in production, you'd use html2canvas or similar
-      const zip = slides.map((slide, index) => ({
-        name: `slide-${index + 1}.txt`,
-        content: `
-Slide ${index + 1}: ${slide.title || 'Untitled'}
+      for (let i = 0; i < slides.length; i++) {
+        const slide = slides[i];
+        
+        const slideDiv = document.createElement('div');
+        slideDiv.style.width = '1920px';
+        slideDiv.style.height = '1080px';
+        slideDiv.style.padding = '80px';
+        slideDiv.style.position = 'absolute';
+        slideDiv.style.left = '-9999px';
+        slideDiv.style.background = slide.background_color || '#ffffff';
+        
+        const images = slide.content?.images || [];
+        slideDiv.innerHTML = `
+          <div style="display: flex; height: 100%; align-items: center;">
+            <div style="flex: 1; max-width: ${images.length > 0 ? '50%' : '100%'};">
+              <h1 style="font-size: 72px; margin-bottom: 40px; font-weight: bold; color: #1a1a1a;">
+                ${slide.title || 'Untitled Slide'}
+              </h1>
+              ${slide.content?.heading ? `
+                <h2 style="font-size: 48px; margin-bottom: 40px; font-weight: 600; color: #333;">
+                  ${slide.content.heading}
+                </h2>
+              ` : ''}
+              ${slide.content?.bullets && slide.content.bullets.length > 0 ? `
+                <ul style="font-size: 36px; line-height: 1.8; list-style: disc; padding-left: 40px;">
+                  ${slide.content.bullets.map((bullet: string) => `<li style="margin-bottom: 15px;">${bullet}</li>`).join('')}
+                </ul>
+              ` : ''}
+            </div>
+            ${images.length > 0 ? `
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 15px; padding-left: 60px;">
+                ${images.map((img: any) => `
+                  <img src="${img.url}" alt="${img.alt || 'Slide image'}" 
+                       style="width: 100%; border-radius: 12px;" />
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+        
+        document.body.appendChild(slideDiv);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const canvas = await html2canvas(slideDiv, {
+          backgroundColor: slide.background_color || '#ffffff',
+          scale: 2
+        });
+        
+        document.body.removeChild(slideDiv);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${presentationTitle.replace(/\s+/g, '-')}-slide-${i + 1}.png`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }
+        });
+        
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
 
-${slide.content?.heading || ''}
-
-${slide.content?.bullets ? slide.content.bullets.join('\n') : ''}
-        `.trim()
-      }));
-
-      // Export as text files for now (in production, use html2canvas for actual images)
-      zip.forEach(file => {
-        const blob = new Blob([file.content], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = file.name;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-
-      toast.success("Slides exported! For image export, use PDF and convert to images.");
+      toast.success("Images exported successfully!");
     } catch (error) {
+      console.error('Images export error:', error);
       toast.error("Export failed");
     }
   };
@@ -247,7 +262,7 @@ ${slide.content?.bullets ? slide.content.bullets.join('\n') : ''}
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" size="sm">
           <Download className="w-4 h-4 mr-2" />
           Export
         </Button>

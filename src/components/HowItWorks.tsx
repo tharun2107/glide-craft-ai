@@ -11,7 +11,7 @@ const steps = [
   {
     icon: Wand2,
     title: "2. AI Generates Instantly",
-    description: "Watch as AI creates professional slides in seconds. Complete with content, layouts, and stunning visuals powered by Gemini.",
+    description: "Watch as AI creates professional slides in seconds. Complete with content, layouts, and stunning visuals powered by advanced AI.",
     color: "from-blue-500 to-cyan-500"
   },
   {

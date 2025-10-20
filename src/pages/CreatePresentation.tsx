@@ -231,7 +231,7 @@ const CreatePresentation = () => {
               </div>
               <div className="text-center p-4 bg-muted/30 rounded-lg">
                 <div className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">AI</div>
-                <div className="text-xs text-muted-foreground mt-1">Gemini 2.0 Flash</div>
+                <div className="text-xs text-muted-foreground mt-1">Advanced AI</div>
               </div>
               <div className="text-center p-4 bg-muted/30 rounded-lg">
                 <div className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">100%</div>

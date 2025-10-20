@@ -9,7 +9,7 @@ const features = [
     icon: MessageSquare,
     image: featureAiChat,
     title: "Conversational AI Generation",
-    description: "Describe your presentation in natural language and watch as AI creates professional slides instantly. Powered by Gemini 2.5 for context-aware content.",
+    description: "Describe your presentation in natural language and watch as AI creates professional slides instantly. Powered by advanced AI for context-aware content.",
     color: "from-purple-500 to-blue-500"
   },
   {

@@ -279,7 +279,7 @@ const SlideEditor = () => {
               AI Assistant
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Powered by Gemini 2.5 Flash
+              Powered by AI Assistant
             </p>
             <AIAssistant
               content={currentSlide?.content?.heading || ''}

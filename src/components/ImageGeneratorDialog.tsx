@@ -71,7 +71,7 @@ export const ImageGeneratorDialog = ({
             Generate Image with AI
           </DialogTitle>
           <DialogDescription>
-            Powered by Nano Banana (Gemini 2.5 Flash Image Preview)
+            Powered by AI Image Generation
           </DialogDescription>
         </DialogHeader>
 

@@ -35,7 +35,7 @@ const ChatPreview = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-white">AI Assistant</h3>
-                  <p className="text-xs text-white/80">Powered by Gemini 2.5</p>
+                  <p className="text-xs text-white/80">Powered by Advanced AI</p>
                 </div>
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse-glow" />
               </div>
