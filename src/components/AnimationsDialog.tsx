@@ -18,13 +18,14 @@ interface AnimationsDialogProps {
 }
 
 const animations = [
-  { id: 'none', name: 'None', description: 'No animation', preview: 'opacity-100' },
+  { id: 'none', name: 'None', description: 'No animation', preview: '' },
   { id: 'fade-in', name: 'Fade In', description: 'Smooth fade in effect', preview: 'animate-fade-in' },
+  { id: 'fade-in-up', name: 'Fade In Up', description: 'Fade with upward motion', preview: 'animate-fade-in-up' },
   { id: 'slide-in-right', name: 'Slide In Right', description: 'Slide from right', preview: 'animate-slide-in-right' },
   { id: 'scale-in', name: 'Scale In', description: 'Zoom in effect', preview: 'animate-scale-in' },
-  { id: 'slide-in-left', name: 'Slide In Left', description: 'Slide from left', preview: 'animate-slide-in-right' },
-  { id: 'slide-in-up', name: 'Slide In Up', description: 'Slide from bottom', preview: 'animate-fade-in' },
-  { id: 'enter', name: 'Combined Enter', description: 'Fade + Scale combo', preview: 'animate-enter' },
+  { id: 'float', name: 'Float', description: 'Floating effect', preview: 'animate-float' },
+  { id: 'pulse-glow', name: 'Pulse Glow', description: 'Pulsing opacity', preview: 'animate-pulse-glow' },
+  { id: 'gradient-shift', name: 'Gradient Shift', description: 'Animated gradient', preview: 'animate-gradient-shift bg-gradient-to-r from-primary via-accent to-secondary bg-[length:200%_200%]' },
 ];
 
 export const AnimationsDialog = ({
@@ -82,9 +83,18 @@ export const AnimationsDialog = ({
                   </div>
                 )}
               </div>
-              <div className="mt-4 h-24 bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center">
-                <div className={`w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-lg shadow-lg ${anim.preview}`}
-                     key={selected === anim.id ? `${anim.id}-active` : anim.id} />
+              <div className="mt-4 h-24 bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center overflow-hidden relative">
+                {anim.id === 'none' ? (
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-lg shadow-lg" />
+                ) : (
+                  <div 
+                    className={`w-16 h-16 rounded-lg shadow-lg ${anim.preview}`}
+                    style={{ 
+                      background: anim.id === 'gradient-shift' ? undefined : 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))'
+                    }}
+                    key={`${anim.id}-${Date.now()}`}
+                  />
+                )}
               </div>
             </Card>
           ))}

@@ -66,7 +66,12 @@ export const SlideshowPreview = ({ slides, initialSlide = 0, onClose }: Slidesho
 
       {/* Slide Content */}
       <div 
-        className="flex-1 flex items-center justify-center p-16 animate-fade-in"
+        key={currentIndex}
+        className={`flex-1 flex items-center justify-center p-16 ${
+          currentSlide?.animations?.entry && currentSlide.animations.entry !== 'none' 
+            ? `animate-${currentSlide.animations.entry}` 
+            : 'animate-fade-in'
+        }`}
         style={{ background: currentSlide?.background_color || '#ffffff' }}
       >
         <div className={`max-w-6xl w-full ${images.length > 0 ? 'grid grid-cols-2 gap-12' : ''}`}>

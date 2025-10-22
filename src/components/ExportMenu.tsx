@@ -24,7 +24,7 @@ export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'px',
-        format: [1280, 720]
+        format: [1920, 1080]
       });
 
       for (let i = 0; i < slides.length; i++) {
@@ -32,36 +32,40 @@ export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
         
         // Create a temporary div to render the slide
         const slideDiv = document.createElement('div');
-        slideDiv.style.width = '1280px';
-        slideDiv.style.height = '720px';
-        slideDiv.style.padding = '60px';
+        slideDiv.style.width = '1920px';
+        slideDiv.style.height = '1080px';
+        slideDiv.style.padding = '0';
         slideDiv.style.position = 'absolute';
         slideDiv.style.left = '-9999px';
         slideDiv.style.background = slide.background_color || '#ffffff';
+        slideDiv.style.fontFamily = 'Arial, sans-serif';
         
         const images = slide.content?.images || [];
+        const hasImages = images.length > 0;
+        
+        // PowerPoint-style layout
         slideDiv.innerHTML = `
-          <div style="display: flex; height: 100%; align-items: center;">
-            <div style="flex: 1; max-width: ${images.length > 0 ? '50%' : '100%'};">
-              <h1 style="font-size: 48px; margin-bottom: 30px; font-weight: bold; color: #1a1a1a;">
+          <div style="display: flex; height: 100%; padding: 80px 100px;">
+            <div style="flex: ${hasImages ? '0 0 55%' : '1'}; display: flex; flex-direction: column; justify-content: flex-start; padding-right: ${hasImages ? '60px' : '0'};">
+              <h1 style="font-size: 72px; margin: 0 0 40px 0; font-weight: 700; color: #000000; line-height: 1.2; font-family: 'Calibri', 'Arial', sans-serif;">
                 ${slide.title || 'Untitled Slide'}
               </h1>
               ${slide.content?.heading ? `
-                <h2 style="font-size: 32px; margin-bottom: 30px; font-weight: 600; color: #333;">
+                <h2 style="font-size: 44px; margin: 0 0 30px 0; font-weight: 600; color: #333333; line-height: 1.3; font-family: 'Calibri', 'Arial', sans-serif;">
                   ${slide.content.heading}
                 </h2>
               ` : ''}
               ${slide.content?.bullets && slide.content.bullets.length > 0 ? `
-                <ul style="font-size: 24px; line-height: 1.8; list-style: disc; padding-left: 30px;">
-                  ${slide.content.bullets.map((bullet: string) => `<li style="margin-bottom: 10px;">${bullet}</li>`).join('')}
+                <ul style="font-size: 28px; line-height: 1.6; list-style-type: disc; padding-left: 40px; margin: 0; color: #444444; font-family: 'Calibri', 'Arial', sans-serif;">
+                  ${slide.content.bullets.map((bullet: string) => `<li style="margin-bottom: 18px; padding-left: 10px;">${bullet}</li>`).join('')}
                 </ul>
               ` : ''}
             </div>
-            ${images.length > 0 ? `
-              <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; padding-left: 40px;">
+            ${hasImages ? `
+              <div style="flex: 0 0 40%; display: flex; align-items: center; justify-content: center;">
                 ${images.map((img: any) => `
                   <img src="${img.url}" alt="${img.alt || 'Slide image'}" 
-                       style="width: 100%; border-radius: 8px;" />
+                       style="width: 100%; height: auto; max-height: 900px; object-fit: cover; border-radius: 0;" crossorigin="anonymous" />
                 `).join('')}
               </div>
             ` : ''}
@@ -71,11 +75,16 @@ export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
         document.body.appendChild(slideDiv);
         
         // Wait for images to load
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         const canvas = await html2canvas(slideDiv, {
           backgroundColor: slide.background_color || '#ffffff',
-          scale: 2
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          width: 1920,
+          height: 1080
         });
         
         document.body.removeChild(slideDiv);
@@ -83,7 +92,7 @@ export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
         if (i > 0) pdf.addPage();
         
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        pdf.addImage(imgData, 'JPEG', 0, 0, 1280, 720);
+        pdf.addImage(imgData, 'JPEG', 0, 0, 1920, 1080);
       }
       
       pdf.save(`${presentationTitle.replace(/\s+/g, '-')}.pdf`);

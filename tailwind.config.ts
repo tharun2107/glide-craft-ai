@@ -13,6 +13,16 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'montserrat': ['Montserrat', 'sans-serif'],
+        'poppins': ['Poppins', 'sans-serif'],
+        'playfair': ['Playfair Display', 'serif'],
+        'lora': ['Lora', 'serif'],
+        'roboto': ['Roboto', 'sans-serif'],
+        'inter': ['Inter', 'sans-serif'],
+        'merriweather': ['Merriweather', 'serif'],
+        'opensans': ['Open Sans', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

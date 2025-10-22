@@ -27,16 +27,22 @@ export const RichTextToolbar = ({ onFormatChange }: RichTextToolbarProps) => {
     <div className="flex items-center gap-2 p-2 bg-card border-b">
       {/* Font Family */}
       <Select onValueChange={(value) => onFormatChange('fontFamily', value)}>
-        <SelectTrigger className="w-[140px] h-8">
+        <SelectTrigger className="w-[160px] h-8">
           <SelectValue placeholder="Font" />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value="'Montserrat', sans-serif">Montserrat</SelectItem>
+          <SelectItem value="'Poppins', sans-serif">Poppins</SelectItem>
+          <SelectItem value="'Playfair Display', serif">Playfair Display</SelectItem>
+          <SelectItem value="'Lora', serif">Lora</SelectItem>
+          <SelectItem value="'Roboto', sans-serif">Roboto</SelectItem>
+          <SelectItem value="'Inter', sans-serif">Inter</SelectItem>
+          <SelectItem value="'Merriweather', serif">Merriweather</SelectItem>
+          <SelectItem value="'Open Sans', sans-serif">Open Sans</SelectItem>
           <SelectItem value="Arial, sans-serif">Arial</SelectItem>
           <SelectItem value="'Times New Roman', serif">Times New Roman</SelectItem>
-          <SelectItem value="'Courier New', monospace">Courier New</SelectItem>
           <SelectItem value="Georgia, serif">Georgia</SelectItem>
           <SelectItem value="Verdana, sans-serif">Verdana</SelectItem>
-          <SelectItem value="'Comic Sans MS', cursive">Comic Sans</SelectItem>
         </SelectContent>
       </Select>
 
