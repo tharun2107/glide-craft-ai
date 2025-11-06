@@ -123,61 +123,77 @@ export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
         const images = slide.content?.images || [];
         const hasImages = images.length > 0;
 
+        // Calculate vertical positions for better spacing
+        let currentY = 0.6;
+        
         // Add title
         if (slide.title) {
           pptxSlide.addText(slide.title, {
             x: 0.5,
-            y: 0.5,
-            w: hasImages ? 4.5 : 9,
-            h: 1,
-            fontSize: 44,
+            y: currentY,
+            w: hasImages ? 5.0 : 9,
+            h: 0.9,
+            fontSize: 40,
             bold: true,
-            color: '1a1a1a'
+            color: '1a1a1a',
+            fontFace: 'Calibri'
           });
+          currentY += 1.1;
         }
 
         // Add heading
         if (slide.content?.heading) {
           pptxSlide.addText(slide.content.heading, {
             x: 0.5,
-            y: 1.8,
-            w: hasImages ? 4.5 : 9,
-            h: 0.8,
-            fontSize: 28,
+            y: currentY,
+            w: hasImages ? 5.0 : 9,
+            h: 0.7,
+            fontSize: 24,
             bold: true,
-            color: '333333'
+            color: '333333',
+            fontFace: 'Calibri'
           });
+          currentY += 0.9;
         }
 
-        // Add bullets
+        // Add bullets - limit spacing to fit 4 bullets nicely
         if (slide.content?.bullets && slide.content.bullets.length > 0) {
           pptxSlide.addText(
-            slide.content.bullets.map((bullet: string) => ({ text: bullet, options: { bullet: true } })),
+            slide.content.bullets.map((bullet: string) => ({ 
+              text: bullet, 
+              options: { bullet: { code: '2022' } } 
+            })),
             {
               x: 0.5,
-              y: slide.content?.heading ? 2.8 : 1.8,
-              w: hasImages ? 4.5 : 9,
-              h: 3,
-              fontSize: 20,
+              y: currentY,
+              w: hasImages ? 5.0 : 9,
+              h: 3.5,
+              fontSize: 18,
               color: '444444',
-              lineSpacing: 32
+              fontFace: 'Calibri',
+              lineSpacing: 28,
+              valign: 'top'
             }
           );
         }
 
-        // Add images
+        // Add images - better positioning for PowerPoint
         if (hasImages) {
-          let yPos = 1.0;
+          const imgStartX = 5.8;
+          const imgY = 1.2;
+          const imgWidth = 3.7;
+          const imgHeight = 4.2;
+          
           for (const img of images) {
             try {
               pptxSlide.addImage({
                 path: img.url,
-                x: 5.5,
-                y: yPos,
-                w: 4,
-                h: 2.5
+                x: imgStartX,
+                y: imgY,
+                w: imgWidth,
+                h: imgHeight,
+                sizing: { type: 'contain', w: imgWidth, h: imgHeight }
               });
-              yPos += 3;
             } catch (imgError) {
               console.error('Error adding image:', imgError);
             }

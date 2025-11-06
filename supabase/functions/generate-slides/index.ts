@@ -65,7 +65,7 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
       "title": "Slide Title",
       "content": {
         "heading": "Main heading",
-        "bullets": ["Detailed point 1 with comprehensive explanation", "Detailed point 2 with supporting information", "Point 3 with specific examples", "Point 4 with actionable insights", "Point 5 with relevant context", "Point 6 with additional details (if needed)", "Point 7 with concluding thoughts (if needed)"],
+        "bullets": ["Detailed point 1 with comprehensive explanation", "Detailed point 2 with supporting information", "Point 3 with specific examples", "Point 4 with actionable insights"],
         "imagePrompt": "Description for AI image generation (only if withImages is true)",
         "notes": "Comprehensive speaker notes with detailed explanations"
       },
@@ -74,7 +74,7 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
   ]
 }
 
-IMPORTANT: Create ${slideCount} slides with rich, detailed content. Each slide MUST have 5-7 comprehensive bullet points that are informative and well-structured. Make the content professional, detailed, and suitable for PowerPoint presentations. Each bullet point should be a complete sentence or detailed phrase with meaningful information.${imageLayoutInstruction}`;
+IMPORTANT: Create ${slideCount} slides with rich, detailed content. Each slide MUST have EXACTLY 4 comprehensive bullet points that are informative and well-structured. Make the content professional, detailed, and suitable for PowerPoint presentations. Each bullet point should be a complete sentence or detailed phrase with meaningful information.${imageLayoutInstruction}`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
       method: 'POST',

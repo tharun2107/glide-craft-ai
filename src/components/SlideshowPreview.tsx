@@ -64,51 +64,51 @@ export const SlideshowPreview = ({ slides, initialSlide = 0, onClose }: Slidesho
         </div>
       </div>
 
-      {/* Slide Content */}
+      {/* Slide Content - PowerPoint-style layout */}
       <div 
         key={currentIndex}
-        className={`flex-1 flex items-center justify-center p-16 ${
+        className={`flex-1 flex items-start justify-center px-20 py-16 ${
           currentSlide?.animations?.entry && currentSlide.animations.entry !== 'none' 
             ? `animate-${currentSlide.animations.entry}` 
             : 'animate-fade-in'
         }`}
         style={{ background: currentSlide?.background_color || '#ffffff' }}
       >
-        <div className={`max-w-6xl w-full ${images.length > 0 ? 'grid grid-cols-2 gap-12' : ''}`}>
-          {/* Text Content */}
-          <div className="flex flex-col justify-center">
+        <div className={`w-full h-full flex ${images.length > 0 ? 'gap-12' : 'justify-start'}`}>
+          {/* Text Content - 55% width when images present */}
+          <div className={`flex flex-col justify-start ${images.length > 0 ? 'w-[55%]' : 'w-full max-w-5xl'}`}>
             {currentSlide?.title && (
-              <h1 className="text-6xl font-bold mb-8 text-foreground">
+              <h1 className="text-5xl font-bold mb-6 text-foreground leading-tight">
                 {currentSlide.title}
               </h1>
             )}
             {currentSlide?.content?.heading && (
-              <h2 className="text-4xl font-semibold mb-8 text-foreground/90">
+              <h2 className="text-3xl font-semibold mb-5 text-foreground/90 leading-snug">
                 {currentSlide.content.heading}
               </h2>
             )}
             {currentSlide?.content?.bullets && currentSlide.content.bullets.length > 0 && (
-              <ul className="space-y-4 text-2xl text-foreground/80">
+              <ul className="space-y-3 text-xl text-foreground/80 leading-relaxed">
                 {currentSlide.content.bullets.map((bullet: string, idx: number) => (
                   <li key={idx} className="flex items-start">
-                    <span className="mr-4 text-primary">•</span>
-                    <span>{bullet}</span>
+                    <span className="mr-3 text-primary mt-1">•</span>
+                    <span className="flex-1">{bullet}</span>
                   </li>
                 ))}
               </ul>
             )}
           </div>
 
-          {/* Images */}
+          {/* Images - 40% width */}
           {images.length > 0 && (
-            <div className="flex items-center justify-center">
+            <div className="w-[40%] flex items-center justify-center">
               <div className="space-y-4 w-full">
                 {images.map((img: any, idx: number) => (
                   <img
                     key={idx}
                     src={img.url}
                     alt={img.alt || 'Slide image'}
-                    className="w-full rounded-lg shadow-2xl"
+                    className="w-full h-auto max-h-[700px] object-cover rounded-lg shadow-2xl"
                   />
                 ))}
               </div>
