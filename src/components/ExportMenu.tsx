@@ -124,7 +124,7 @@ export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
         const hasImages = images.length > 0;
 
         // Calculate vertical positions for better spacing
-        let currentY = 0.6;
+        let currentY = 0.5;
         
         // Add title
         if (slide.title) {
@@ -132,13 +132,13 @@ export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
             x: 0.5,
             y: currentY,
             w: hasImages ? 5.0 : 9,
-            h: 0.9,
-            fontSize: 40,
+            h: 0.7,
+            fontSize: 28,
             bold: true,
             color: '1a1a1a',
             fontFace: 'Calibri'
           });
-          currentY += 1.1;
+          currentY += 0.8;
         }
 
         // Add heading
@@ -147,16 +147,16 @@ export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
             x: 0.5,
             y: currentY,
             w: hasImages ? 5.0 : 9,
-            h: 0.7,
-            fontSize: 24,
+            h: 0.5,
+            fontSize: 18,
             bold: true,
             color: '333333',
             fontFace: 'Calibri'
           });
-          currentY += 0.9;
+          currentY += 0.7;
         }
 
-        // Add bullets - limit spacing to fit 4 bullets nicely
+        // Add bullets - optimized for 4 bullets with proper line spacing
         if (slide.content?.bullets && slide.content.bullets.length > 0) {
           pptxSlide.addText(
             slide.content.bullets.map((bullet: string) => ({ 
@@ -167,11 +167,11 @@ export const ExportMenu = ({ presentationTitle, slides }: ExportMenuProps) => {
               x: 0.5,
               y: currentY,
               w: hasImages ? 5.0 : 9,
-              h: 3.5,
-              fontSize: 18,
+              h: 4.0,
+              fontSize: 12,
               color: '444444',
               fontFace: 'Calibri',
-              lineSpacing: 28,
+              lineSpacing: 20,
               valign: 'top'
             }
           );
