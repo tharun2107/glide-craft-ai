@@ -12,6 +12,7 @@ import { ImageGeneratorDialog } from "@/components/ImageGeneratorDialog";
 import { ThemesDialog } from "@/components/ThemesDialog";
 import { AnimationsDialog } from "@/components/AnimationsDialog";
 import { SlideshowPreview } from "@/components/SlideshowPreview";
+import { AddSlideDialog } from "@/components/AddSlideDialog";
 import type { Session } from "@supabase/supabase-js";
 
 interface Slide {
@@ -53,6 +54,7 @@ const SlideEditor = () => {
   const [showAnimations, setShowAnimations] = useState(false);
   const [showSlideshow, setShowSlideshow] = useState(false);
   const [showAI, setShowAI] = useState(true);
+  const [showAddSlide, setShowAddSlide] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -142,29 +144,13 @@ const SlideEditor = () => {
     }
   };
 
-  const handleAddSlide = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('slides')
-        .insert({
-          presentation_id: id,
-          slide_number: slides.length + 1,
-          title: 'New Slide',
-          content: { heading: '', bullets: [] },
-          layout: 'title-content'
-        })
-        .select()
-        .single();
+  const handleAddSlide = () => {
+    setShowAddSlide(true);
+  };
 
-      if (error) throw error;
-
-      setSlides([...slides, data]);
-      setCurrentSlideIndex(slides.length);
-      toast.success('Slide added');
-    } catch (error) {
-      console.error('Error adding slide:', error);
-      toast.error('Failed to add slide');
-    }
+  const handleSlideAdded = (newSlide: Slide) => {
+    setSlides([...slides, newSlide]);
+    setCurrentSlideIndex(slides.length);
   };
 
   const handleAddText = () => {
@@ -338,6 +324,15 @@ const SlideEditor = () => {
           onClose={() => setShowSlideshow(false)}
         />
       )}
+
+      {/* Add Slide Dialog */}
+      <AddSlideDialog
+        open={showAddSlide}
+        onOpenChange={setShowAddSlide}
+        presentationId={id!}
+        slideNumber={slides.length + 1}
+        onSlideAdded={handleSlideAdded}
+      />
     </div>
   );
 };

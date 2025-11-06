@@ -40,8 +40,8 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost">Sign In</Button>
-            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
+            <Button variant="ghost" onClick={() => window.location.href = '/auth'}>Sign In</Button>
+            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity" onClick={() => window.location.href = '/auth'}>
               Get Started Free
             </Button>
           </div>
@@ -70,8 +70,8 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-2 pt-2">
-                <Button variant="ghost" className="w-full">Sign In</Button>
-                <Button className="w-full bg-gradient-primary">Get Started Free</Button>
+                <Button variant="ghost" className="w-full" onClick={() => window.location.href = '/auth'}>Sign In</Button>
+                <Button className="w-full bg-gradient-primary" onClick={() => window.location.href = '/auth'}>Get Started Free</Button>
               </div>
             </div>
           </div>
