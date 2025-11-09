@@ -39,7 +39,16 @@ export const ImageGeneratorDialog = ({
         body: { prompt: prompt.trim() }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error generating image:', error);
+        toast.error(data?.error || 'Failed to generate image');
+        return;
+      }
+
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
 
       if (data.imageUrl) {
         setGeneratedImage(data.imageUrl);
@@ -47,7 +56,7 @@ export const ImageGeneratorDialog = ({
       }
     } catch (error) {
       console.error('Error generating image:', error);
-      toast.error('Failed to generate image');
+      toast.error('Failed to generate image. Please try again.');
     } finally {
       setIsGenerating(false);
     }
